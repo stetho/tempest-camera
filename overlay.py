@@ -11,6 +11,7 @@ import os
 import time
 from dotenv import load_dotenv
 from pathlib import Path
+from analytics.pressure import zambretti_forecast
 
 load_dotenv()
 
@@ -75,7 +76,7 @@ def draw_overlay(frame: np.ndarray, obs: dict) -> np.ndarray:
 
     # Semi-transparent dark panel across the bottom
     overlay = frame.copy()
-    panel_height = 200
+    panel_height = 250
     cv2.rectangle(overlay, (0, h - panel_height), (w, h), (0, 0, 0), -1)
     cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
 
@@ -108,35 +109,43 @@ def draw_overlay(frame: np.ndarray, obs: dict) -> np.ndarray:
     # Temperature block
     temp = obs["air_temperature"]
     feels = obs["feels_like"]
-    cv2.putText(frame, f"{temp:.1f}C", (30, top + 130), FONT, LARGE, WHITE, BOLD)
-    cv2.putText(frame, f"Feels {feels:.1f}C", (30, top + 162), FONT, SMALL, GREY, NORMAL)
+    cv2.putText(frame, f"{temp:.1f}C", (30, top + 145), FONT, LARGE, WHITE, BOLD)
+    cv2.putText(frame, f"Feels {feels:.1f}C", (30, top + 178), FONT, SMALL, GREY, NORMAL)
 
     # Wind block
     wind_avg = obs["wind_avg"]
     wind_gust = obs["wind_gust"]
     wind_dir = wind_direction_compass(obs["wind_direction"])
     beaufort = beaufort_description(wind_avg)
-    cv2.putText(frame, f"{wind_avg:.1f} mph {wind_dir}", (280, top + 130), FONT, MEDIUM, WHITE, BOLD)
-    cv2.putText(frame, f"Gusts {wind_gust:.1f}  {beaufort}", (280, top + 162), FONT, SMALL, GREY, NORMAL)
+    cv2.putText(frame, f"{wind_avg:.1f} mph {wind_dir}", (280, top + 145), FONT, MEDIUM, WHITE, BOLD)
+    cv2.putText(frame, f"Gusts {wind_gust:.1f}  {beaufort}", (280, top + 178), FONT, SMALL, GREY, NORMAL)
 
     # Pressure block
     pressure = obs["sea_level_pressure"]
     trend = obs["pressure_trend"].capitalize()
-    cv2.putText(frame, f"{pressure:.1f} mb", (560, top + 130), FONT, MEDIUM, WHITE, BOLD)
-    cv2.putText(frame, f"Pressure {trend}", (560, top + 162), FONT, SMALL, GREY, NORMAL)
+    cv2.putText(frame, f"{pressure:.1f} mb", (560, top + 145), FONT, MEDIUM, WHITE, BOLD)
+    cv2.putText(frame, f"Pressure {trend}", (560, top + 178), FONT, SMALL, GREY, NORMAL)
+
+    # Zambretti forecast
+    zambretti = zambretti_forecast(
+        obs["sea_level_pressure"],
+        obs["pressure_trend"],
+        month=datetime.datetime.now().month
+    )
+    cv2.putText(frame, zambretti["forecast"], (30, top + 95), FONT, SMALL, YELLOW, NORMAL)
 
     # UV and solar block
     uv = obs["uv"]
     solar = obs["solar_radiation"]
-    cv2.putText(frame, f"UV {uv:.1f}", (820, top + 130), FONT, MEDIUM, CYAN, BOLD)
-    cv2.putText(frame, f"{solar:.0f} W/m2", (820, top + 162), FONT, SMALL, GREY, NORMAL)
+    cv2.putText(frame, f"UV {uv:.1f}", (820, top + 145), FONT, MEDIUM, CYAN, BOLD)
+    cv2.putText(frame, f"{solar:.0f} W/m2", (820, top + 178), FONT, SMALL, GREY, NORMAL)
 
     # Humidity, dew point and rain
     rh = obs["relative_humidity"]
     dew = obs["dew_point"]
     rain_today = obs["precip_accum_local_day"]
-    cv2.putText(frame, f"RH {rh:.0f}%  Dew {dew:.1f}C", (1080, top + 130), FONT, MEDIUM, WHITE, BOLD)
-    cv2.putText(frame, f"Rain today: {rain_today:.1f} mm", (1080, top + 162), FONT, SMALL, GREY, NORMAL)
+    cv2.putText(frame, f"RH {rh:.0f}%  Dew {dew:.1f}C", (1080, top + 145), FONT, MEDIUM, WHITE, BOLD)
+    cv2.putText(frame, f"Rain today: {rain_today:.1f} mm", (1080, top + 178), FONT, SMALL, GREY, NORMAL)
 
     return frame
 
