@@ -8,6 +8,7 @@ import numpy as np
 import requests
 import datetime
 import os
+import time
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -141,19 +142,28 @@ def draw_overlay(frame: np.ndarray, obs: dict) -> np.ndarray:
 
 def main():
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    
+    interval = int(os.getenv("CAPTURE_INTERVAL_SECONDS", 600))
+    print(f"Starting camera overlay. Capturing every {interval} seconds.")
 
-    print("Fetching observation...")
-    obs = fetch_observation()
+    while True:
+        try:
+            print("Fetching observation...")
+            obs = fetch_observation()
 
-    print("Capturing frame...")
-    frame = capture_frame()
+            print("Capturing frame...")
+            frame = capture_frame()
 
-    print("Drawing overlay...")
-    annotated = draw_overlay(frame, obs)
+            print("Drawing overlay...")
+            annotated = draw_overlay(frame, obs)
 
-    cv2.imwrite(str(OUTPUT_PATH), annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
-    print(f"Saved to {OUTPUT_PATH}")
+            cv2.imwrite(str(OUTPUT_PATH), annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            print(f"Saved to {OUTPUT_PATH}")
+        except Exception as e:
+            print(f"Error: {e}")
 
+        time.sleep(interval)
+    
 
 if __name__ == "__main__":
     main()
