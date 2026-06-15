@@ -9,6 +9,24 @@ and displayed on the Camera tab at [tempest.23wwc.cloud](https://tempest.23wwc.c
 
 ![Camera overlay example](docs/example.jpg)
 
+## Timelapse
+
+Each frame is also saved with a timestamp to `output/frames/`. A separate script
+`timelapse.py` stitches a full day's frames into an MP4 video, run automatically
+at 01:00 each night via cron:
+
+```bash
+# Manually generate timelapse for a specific date
+python timelapse.py 2026-06-15
+
+# Or let the cron job handle it
+0 1 * * * cd /data/tempest-camera && docker compose --profile timelapse run --rm tempest-timelapse
+```
+
+Videos are saved to `output/timelapse/YYYYMMDD.mp4` and served by the dashboard
+on the Camera tab. Frames older than 2 days are automatically cleaned up to
+manage disk space.
+
 ## Features
 
 - Connects to the Tempest RTSPS camera stream via OpenCV
