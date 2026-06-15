@@ -6,3 +6,14 @@ services:
       - .env
     volumes:
       - ./output:/app/output
+
+  tempest-timelapse:
+    build: .
+    restart: "no"
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+    command: ["python", "timelapse.py"]
+    profiles:
+      - timelapse

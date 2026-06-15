@@ -159,6 +159,12 @@ def main():
 
             cv2.imwrite(str(OUTPUT_PATH), annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
             print(f"Saved to {OUTPUT_PATH}")
+            frames_dir = OUTPUT_PATH.parent / "frames"
+            frames_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.datetime.now(datetime.timezone.utc)
+            frame_filename = frames_dir / timestamp.strftime("%Y%m%d_%H%M%S.jpg")
+            cv2.imwrite(str(frame_filename), annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            print(f"Saved frame to {frame_filename}")
         except Exception as e:
             print(f"Error: {e}")
 
